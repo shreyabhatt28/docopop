@@ -57,7 +57,7 @@ const EditDocument = ({ fileUrl }) => {
 
   return (
 
-    <div className="flex w-ll h-full items-center justify-center flex-col gap-2 pt-12">
+    <div className="flex w-full h-screen items-center justify-center flex-col gap-2 pt-36">
       {isDocLoading && <div className="z-[20] bg-black bg-opacity-10 backdrop-blur-sm fixed inset-0 text-white"></div>}
       {!isDocLoading && <SideBar/>}
       <div id = "singlePage" className="flex justify-center items-center">

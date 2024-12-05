@@ -121,8 +121,19 @@ const CanvasProvider = ({children}) =>{
         canvi.renderAll();
     }
     
+    const addBlackout = (canvi) => {
+        const blackOut = new fabric.Rect({
+            left:200,
+            top:150,
+            width:200,
+            height:30,
+            fill: 'black',
+        });
+        canvi.add(blackOut);
+        canvi.renderAll();
+    }
     return(
-        <editOptions.Provider value={{canvas,setCanvas,numPages,setNumPages,currentPage,setCurrentPage,pdfUrl,setPdfUrl,deleteBtn,addText,addBlurEffect,edits,setEdits,downloadPage,addHighlight,addEraser}}>
+        <editOptions.Provider value={{canvas,setCanvas,numPages,setNumPages,currentPage,setCurrentPage,pdfUrl,setPdfUrl,deleteBtn,addText,addBlurEffect,edits,setEdits,downloadPage,addHighlight,addEraser,addBlackout}}>
             {children}
         </editOptions.Provider>
     )

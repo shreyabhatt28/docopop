@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-tooltip": "^1.1.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "fabric": "^4.6.0",
@@ -19,7 +20,7 @@
     "pdfjs-dist": "^4.9.124",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-drag-drop-files": "^2.4.0",
+    "react-dropzone": "^14.3.5",
     "react-pdf": "^9.1.1",
     "shadcn": "^2.1.6",
     "tailwind-merge": "^2.5.5",

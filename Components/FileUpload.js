@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-import { FileUploader } from "react-drag-drop-files";
+import {useDropzone} from "react-dropzone";
 import { Button } from "./ui/button";
-import { Edit } from "lucide-react";
+import { Edit, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const cloud_name = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
@@ -16,10 +16,18 @@ export default function FileUpload() {
   const [error,setError] = useState(null);
   const router = useRouter();
   
+  const onDrop = (acceptedFiles) => {
+    setFile(acceptedFiles[0]);
+    console.log(acceptedFiles[0]);
+    setError(null);
+    setUploading(false);
+  }
 
-  const handleChange = (file) => {
-    setFile(file);
-  };
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: '.pdf',
+    multiple: false, 
+});
 
   const handleUpload = async () => {
     if(!file){
@@ -49,43 +57,39 @@ export default function FileUpload() {
 
       setFileUrl(data.secure_url);
       router.push(`/edit?fileUrl=${encodeURIComponent(data.secure_url)}`);
-
+      setUploading(false);
     }catch(err){
       setError(err.message);
-    }finally{
-      setUploading(false);
-    }
   }
-
+}
 
 
   return (
-    <div className="flex flex-col items-center gap-6 bg-blue-200 p-20 rounded-md shadow-md">
-      <h1 className="text-[40px] font-bold text-blue-900">Upload your PDF</h1>
-      
-      <FileUploader
-        multiple={false}
-        handleChange={handleChange}
-        name="file"
-        types={fileTypes}
-        label="Upload or drop it here"
+    <div className="flex flex-col items-center justify-center p-4 bg-white w-[90vw] h-[400px] sm:w-[500px] rounded-[50px] shadow-xl">
 
-      />
-      
-      <p className="text-gray-500">
-        {file ? `File name: ${file.name}` : "No files uploaded yet"}
+    <div {...getRootProps()} className="flex flex-col justify-center p-10 items-center border-dashed border-purple-800 border-2 rounded-xl cursor-pointer">
+      <input {...getInputProps()}/>
+      <div className="mb-4">
+      <Upload/>
+      <h3 className="italic text-xs text-gray-500">pdf</h3>
+      </div>
+      <h1 className="font-bold">Drag and Drop the file here</h1>
+      <p>or <span className="text-purple-800">browse file </span>from your device</p>
+      <p className="text-gray-500 mt-2 text-sm">
+        {file ? `selected file: ${file.name}` : "no file selected"}
       </p>
+      <p className={error ? 'block text-red-500 text-xs mt-2' : 'hidden'}>Failed! Try uploading again</p>
+    </div>
 
-      {file && (
+      {file && !error && (
         <Button
           onClick = {handleUpload}
-          className="bg-blue-600 hover:bg-blue-400 text-white transition ease"
+          className="mt-4 bg-purple-800 hover:bg-puple-400 text-white transition ease rounded-full"
         >
-          { uploading ? 'Getting Ready....' : 'Start Editing'}
+          { uploading && !error ? 'Getting Ready...' : 'Edit'}
           <Edit />
         </Button>
       )}
-      <p className={error ? 'block text-red-500 text-xs' : 'hidden'}>Failed! try uploading again</p>
-    </div>
+      </div>
   );
 }
