@@ -6,6 +6,7 @@ import { Edit } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const cloud_name = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+const cloud_preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 const fileTypes = ["pdf"];
 
 export default function FileUpload() {
@@ -30,7 +31,7 @@ export default function FileUpload() {
 
     const formData = new FormData();
     formData.append('file',file);
-    formData.append('upload_preset','pdf-editor');
+    formData.append('upload_preset',cloud_preset);
     formData.append('resource_type', 'auto');
 
 
@@ -68,7 +69,7 @@ export default function FileUpload() {
         name="file"
         types={fileTypes}
         label="Upload or drop it here"
-        
+
       />
       
       <p className="text-gray-500">

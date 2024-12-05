@@ -1,4 +1,6 @@
+import CanvasProvider from '@/Context/CanvasContext';
 import './globals.css';
+
 
 export const metadata = {
   title: "PDF Editor",
@@ -7,10 +9,12 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="h-full ">
-      <body className="h-full flex items-center justify-center bg-slate-200">
+    <html lang="en" className='w-screen h-screen m-0 p-0 '>
+      <CanvasProvider>
+      <body className="h-screen w-screen  flex justify-center items-center overflow-x-hidden">
           {children}
       </body>
+      </CanvasProvider>
     </html>
   );
 }
