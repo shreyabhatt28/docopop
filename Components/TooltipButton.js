@@ -1,5 +1,5 @@
 
-import { TooltipProvider , Tooltip, TooltipContent, TooltipTrigger } from "../Components/ui/tooltip"
+import { Tooltip,TooltipProvider,TooltipContent,TooltipTrigger } from "./ui/tooltip";
 
 const TooltipButton = ({ icon, onClick, tooltipText }) => {
   return (
