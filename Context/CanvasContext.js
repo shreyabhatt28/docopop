@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState,useEffect } from "react";
 import {fabric} from "fabric";
 import { PDFDocument } from "pdf-lib";
 
@@ -16,14 +16,35 @@ const CanvasProvider = ({children}) =>{
     const [currentPage,setCurrentPage] = useState(0);
     const [canvas,setCanvas] = useState('');
     const [edits,setEdits] = useState({});
+    const [tempCanvas,setTempCanvas] = useState('');
+    const [isClient, setIsClient] = useState(false);
 
 
-    const tempCanvasElement = document.createElement('canvas');
-    tempCanvasElement.width = 595;
-    tempCanvasElement.height = 842;
-    tempCanvasElement.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+    useEffect(() => {
+        setIsClient(true); // This will be set to true only on the client-side
+    }, []);
 
-    const tempCanvas = new fabric.Canvas(tempCanvasElement);
+    // Initialize fabric canvases only on the client-side
+    useEffect(() => {
+        if (isClient) {
+            const mainCanvasElement = document.createElement('canvas');
+            mainCanvasElement.width = 595;
+            mainCanvasElement.height = 842;
+            mainCanvasElement.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+    
+            const newCanvas = new fabric.Canvas(mainCanvasElement);
+            setCanvas(newCanvas); 
+            
+            const tempCanvasElement = document.createElement('canvas');
+            tempCanvasElement.width = 595;
+            tempCanvasElement.height = 842;
+            tempCanvasElement.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+    
+            const newTempCanvas = new fabric.Canvas(tempCanvasElement);
+            setTempCanvas(newTempCanvas); 
+        }
+    }, [isClient]);
+
 
     const exportDocument = async (fileUrl) => {
         try {
