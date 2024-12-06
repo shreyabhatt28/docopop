@@ -3,16 +3,18 @@ import {useEffect, useState} from "react";
 import { Button } from "./ui/button";
 import { MoveRight, MoveLeft } from "lucide-react";
 import SideBar from "./Sidebar";
-
+import Loading from "./Loading";
 import {fabric} from "fabric";
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import { useOptions } from "@/Context/CanvasContext";
 
-const EditDocument = ({ fileUrl }) => {
+const EditDocument = ({fileUrl}) => {
   const contextValues = useOptions();
 
   const[isDocLoading,setIsDocLoading] = useState(true);
+
+  
 
   useEffect(() => {
     pdfjs.GlobalWorkerOptions.workerSrc =
@@ -21,10 +23,11 @@ const EditDocument = ({ fileUrl }) => {
 
 
   const onDocumentLoadSuccess = ({numPages}) => {
+    contextValues.setEdits({});
     contextValues.setNumPages(numPages);
     contextValues.setCurrentPage(1);
     contextValues.setCanvas(createCanvas());
-    setIsDocLoading(false);
+    setTimeout(()=> {setIsDocLoading(false);},2000);
   }
 
   const createCanvas = () => {
@@ -36,30 +39,33 @@ const EditDocument = ({ fileUrl }) => {
     ))
   }
 
-  function changePage() {
-    const page = contextValues.currentPage;
-    contextValues.edits[page] = contextValues.canvas.toObject();
+  function changePage(direction) {
+    const currentPage = contextValues.currentPage;
+    contextValues.edits[currentPage] = contextValues.canvas.toObject();
     contextValues.setEdits(contextValues.edits);
-    let offset;
-    if (contextValues.numPages > page){
-      offset = 1;
-    }
-    if(page > 1){
-      offset = -1;
-    }
 
-    contextValues.setCurrentPage(page => page + offset);
+    const newPage = currentPage + direction;
+
+    if (newPage >= 1 && newPage <= contextValues.numPages) {
+        contextValues.setCurrentPage(newPage);
+    }
 
     contextValues.canvas.clear();
-    contextValues.edits[page + offset] && contextValues.canvas.loadFromJSON(contextValues.edits[page + offset]);
-    contextValues.canvas.renderAll();
+    
+    (contextValues.edits[newPage]) && contextValues.canvas.loadFromJSON(contextValues.edits[newPage])
+    {
+      contextValues.canvas.renderAll();
+    }
+
+    console.log(contextValues.edits); 
 }
+
 
   return (
 
-    <div className="flex w-full h-screen items-center justify-center flex-col gap-2 pt-36">
-      {isDocLoading && <div className="z-[20] bg-black bg-opacity-10 backdrop-blur-sm fixed inset-0 text-white"></div>}
-      {!isDocLoading && <SideBar/>}
+    <div className="flex w-full h-full items-center justify-center flex-col gap-2 pt-10">
+      {isDocLoading && <div className="z-[20] bg-black bg-opacity-40 backdrop-blur-sm fixed inset-0 text-white flex items-center justify-center"><Loading/></div>}
+      {!isDocLoading && <SideBar fileUrl={fileUrl}/>}
       <div id = "singlePage" className="flex justify-center items-center">
       <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess} loading="">
       <div className="z-[8] absolute">
@@ -71,11 +77,11 @@ const EditDocument = ({ fileUrl }) => {
       </Document>
       </div>
       <div className="p-2 z-[9]">
-        <Button disabled={contextValues.currentPage === 1} onClick = {changePage} className="bg-purple-400 w-8 h-8 rounded-full text-white mr-2">
+        <Button disabled={contextValues.currentPage === 1} onClick = {()=>changePage(-1)} className="bg-purple-800 w-8 h-8 rounded-full text-white mr-2">
           <MoveLeft/>
         </Button>
         <span>Page {contextValues.currentPage} of {contextValues.numPages} </span>
-        <Button disabled={contextValues.currentPage === contextValues.numPages} onClick = {changePage} className="bg-purple-400 w-8 h-8 rounded-full text-white ml-2">
+        <Button disabled={contextValues.currentPage === contextValues.numPages} onClick = {()=>changePage(1)} className="bg-purple-800 w-8 h-8 rounded-full text-white ml-2">
           <MoveRight />
         </Button>
       </div>

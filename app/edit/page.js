@@ -1,15 +1,15 @@
 "use client"
 
-import { useSearchParams } from 'next/navigation'; 
 import EditDocument from '@/Components/EditDocument';
+import { useSearchParams } from 'next/navigation';
 
 const MyPdfViewer = () => {
     const searchParams = useSearchParams();
-    const fileUrl = searchParams.get("fileUrl");
+    const pdfUrl = searchParams.get("fileUrl");
 
     return(
         <div className='w-full h-full flex justify-center'>
-            <EditDocument fileUrl={fileUrl}/>
+            <EditDocument fileUrl = {pdfUrl}/>
         </div>
     )
 };

@@ -1,12 +1,10 @@
 import { Type,EyeClosed, Eraser, Highlighter,Pen,Save,Trash } from "lucide-react";
-import { Button } from "./ui/button";
 import { useOptions } from "@/Context/CanvasContext";
 import TooltipButton from "./TooltipButton";
 
 
-const SideBar = () => {
+const SideBar = ({fileUrl}) => {
     const contextValues = useOptions();
-
 return (
     <div className="z-[10] pl-2 top-0 left-0 absolute h-full w-[180px] flex items-center justify-start md:justify-end">
             <div className="fixed bg-purple-300 w-[50px] md:w-[80px] shadow-md rounded-full p-2 flex flex-col items-center justify-between gap-6 py-4">
@@ -44,8 +42,8 @@ return (
                 
                 <TooltipButton
                     icon={<Save />}
-                    onClick={() => contextValues.downloadPage()}
-                    tooltipText="Download Page"
+                    onClick={() => contextValues.exportDocument(fileUrl)}
+                    tooltipText="Download"
                 />
 
             </div>

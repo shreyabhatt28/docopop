@@ -1,20 +1,23 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {useDropzone} from "react-dropzone";
 import { Button } from "./ui/button";
 import { Edit, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useOptions } from "@/Context/CanvasContext";
 
 const cloud_name = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const cloud_preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-const fileTypes = ["pdf"];
+
 
 export default function FileUpload() {
   const [file, setFile] = useState(null);
+  const [fileUrl,setFileUrl] = useState(null);
   const [uploading,setUploading] = useState(false);
-  const [fileUrl, setFileUrl] = useState(null);
   const [error,setError] = useState(null);
   const router = useRouter();
+
+  const contextValues = useOptions();
   
   const onDrop = (acceptedFiles) => {
     setFile(acceptedFiles[0]);
@@ -56,7 +59,9 @@ export default function FileUpload() {
       }
 
       setFileUrl(data.secure_url);
-      router.push(`/edit?fileUrl=${encodeURIComponent(data.secure_url)}`);
+
+      router.push(`/edit/?fileUrl=${data.secure_url}`);
+
       setUploading(false);
     }catch(err){
       setError(err.message);

@@ -1,4 +1,3 @@
-import DropFileInput from "@/Components/DropFileInput";
 import FileUpload from "@/Components/FileUpload";
 
 export default function Home() {

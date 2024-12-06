@@ -9,10 +9,12 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className='w-screen h-screen m-0 p-0 '>
+    <html lang="en" className='h-full w-screen m-0 p-0 bg-slate-50'>
       <CanvasProvider>
-      <body className="h-screen w-screen  flex justify-center items-center overflow-x-hidden">
-          {children}
+      <body className="min-h-full w-full flex overflow-x-hidden">
+        <main className='flex-1 overflow-y-auto'>
+        {children}
+        </main>
       </body>
       </CanvasProvider>
     </html>

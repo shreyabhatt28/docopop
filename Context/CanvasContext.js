@@ -1,9 +1,8 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import {fabric} from "fabric";
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { PDFDocument } from "pdf-lib";
 
 const editOptions = createContext();
 
@@ -13,44 +12,87 @@ export const useOptions = () =>{
     
 
 const CanvasProvider = ({children}) =>{
-
-    const [pdfUrl,setPdfUrl] = useState(null);
     const [numPages,setNumPages] = useState(null);
-    const [currentPage,setCurrentPage] = useState(1);
+    const [currentPage,setCurrentPage] = useState(0);
     const [canvas,setCanvas] = useState('');
     const [edits,setEdits] = useState({});
-    const [exportPages,setExportPages] = useState([]);
 
-    const downloadPage = () => {
-        const doc = document.querySelector("#singlePage");
-        if (!doc) {
-        console.error("The document element is not available yet.");
-        return;
+
+    const tempCanvasElement = document.createElement('canvas');
+    tempCanvasElement.width = 595;
+    tempCanvasElement.height = 842;
+    tempCanvasElement.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+
+    const tempCanvas = new fabric.Canvas(tempCanvasElement);
+
+    const exportDocument = async (fileUrl) => {
+        try {
+            const existingPdfBytes = await fetch(fileUrl).then(res => res.arrayBuffer());
+            const pdfDoc = await PDFDocument.load(existingPdfBytes);
+
+            const pages = pdfDoc.getPages();
+
+            console.log(pages.length);
+
+            if (pages.length === 1){
+                const singlePage = pages[0];
+
+                const canvasOverlayUrl = canvas.toDataURL('image/png');
+                const canvasOverlayBytes = await fetch(canvasOverlayUrl).then(res => res.arrayBuffer());
+                const canvasOverlay = await pdfDoc.embedPng(canvasOverlayBytes);
+
+                const { width, height } = canvasOverlay;
+    
+                    console.log('Image Dimensions:', width, height);
+        
+                    singlePage.drawImage(canvasOverlay, {
+                        x: 0,
+                        y: singlePage.getHeight() - height,
+                        width,
+                        height,
+                    });
+
+            }
+            else {
+                for (let i = 0; i < pages.length; i++){
+
+                    const page = pages[i];
+                    
+                    tempCanvas.loadFromJSON(edits[i+1]);
+                    tempCanvas.renderAll();
+
+                    const canvasOverlayUrl = tempCanvas.toDataURL('image/png');
+                    const canvasOverlayBytes = await fetch(canvasOverlayUrl).then(res => res.arrayBuffer());
+                    const canvasOverlay = await pdfDoc.embedPng(canvasOverlayBytes);
+    
+                    const { width, height } = canvasOverlay;
+    
+                    console.log('Image Dimensions:', width, height);
+        
+                    page.drawImage(canvasOverlay, {
+                        x: 0,
+                        y: page.getHeight() - height,
+                        width,
+                        height,
+                    });
+                }
+            }
+            
+            const modifiedPdfBytes = await pdfDoc.save();
+
+            const blob = new Blob([modifiedPdfBytes], { type: 'application/pdf' });
+            const exportUrl = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = exportUrl;
+            link.download = 'modified_page.pdf';
+            link.click();
+    
+            URL.revokeObjectURL(exportUrl);
+    
+        } catch (error) {
+            console.error('Error exporting single page:', error);
         }
-
-        setTimeout(() => {
-            html2canvas(doc,{scale:2}).then((canvas) => {
-                const imgData = canvas.toDataURL('image/png');
-                const imgWidth = canvas.width;
-                const imgHeight = canvas.height;
-
-                const pdfWidth = 595; 
-                const pdfHeight = 842;
-
-                const scaleX = pdfWidth / imgWidth;
-                const scaleY = pdfHeight / imgHeight;
-                const scale = Math.min(scaleX, scaleY);
-
-                const scaledWidth = imgWidth * scale;
-                const scaledHeight = imgHeight * scale;
-
-                const pdf = new jsPDF('p', 'pt', 'a4');
-                
-                pdf.addImage(imgData, 'PNG', 0, 0, scaledWidth, scaledHeight);
-
-                pdf.save("edited_document.pdf");
-            });
-        }, 100);
     }
 
 
@@ -133,7 +175,7 @@ const CanvasProvider = ({children}) =>{
         canvi.renderAll();
     }
     return(
-        <editOptions.Provider value={{canvas,setCanvas,numPages,setNumPages,currentPage,setCurrentPage,pdfUrl,setPdfUrl,deleteBtn,addText,addBlurEffect,edits,setEdits,downloadPage,addHighlight,addEraser,addBlackout}}>
+        <editOptions.Provider value={{canvas,setCanvas,numPages,setNumPages,currentPage,setCurrentPage,deleteBtn,addText,addBlurEffect,edits,setEdits,addHighlight,addEraser,addBlackout,exportDocument}}>
             {children}
         </editOptions.Provider>
     )
