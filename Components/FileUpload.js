@@ -59,7 +59,7 @@ export default function FileUpload() {
 
       router.push(`/edit/?fileUrl=${encodeURIComponent(data.secure_url)}`);
 
-      setUploading(false);
+      setTimeout(()=>setUploading(false),2000);
     }catch(err){
       setError(err.message);
   }
@@ -88,8 +88,7 @@ export default function FileUpload() {
           onClick = {handleUpload}
           className="mt-4 bg-purple-800 hover:bg-puple-400 text-white transition ease rounded-full"
         >
-          { uploading && !error ? 'Getting Ready...' : 'Edit'}
-          <Edit />
+          { uploading && !error ? <div className="w-2 h-2 border-2 border-t-transparent border-b-transparent border-l-transparent border-r-white-400 rounded-full animate-spin"></div> : <>Edit <Edit /></>}
         </Button>
       )}
       </div>

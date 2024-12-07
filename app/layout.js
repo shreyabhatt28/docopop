@@ -5,6 +5,9 @@ import './globals.css';
 export const metadata = {
   title: "DocoPop",
   description: "Edit your PDF files",
+  icons: {
+    icon: '/favicon.svg',
+  }
 };
 
 export default function RootLayout({ children }) {

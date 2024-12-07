@@ -70,7 +70,7 @@ console.log(contextValues.edits)
     <div className="flex w-full h-full items-center justify-center flex-col gap-2 pt-10">
       {isDocLoading && <div className="z-[20] bg-black bg-opacity-40 backdrop-blur-sm fixed inset-0 text-white flex items-center justify-center"><Loading/></div>}
       {!isDocLoading && <SideBar fileUrl={fileUrl}/>}
-      {(contextValues.numPages > 1) && <p className="text-sm text-purple-800 mb-2">Please navigate between pages to save changes</p>}
+      {(contextValues.numPages > 1) && <p className="text-sm text-purple-800 mb-2">Please navigate between pages to save the changes</p>}
       <div id = "singlePage" className="flex justify-center items-center">
       <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess} loading="">
       <div className="z-[8] absolute">
