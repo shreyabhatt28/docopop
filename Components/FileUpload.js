@@ -4,7 +4,6 @@ import {useDropzone} from "react-dropzone";
 import { Button } from "./ui/button";
 import { Edit, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useOptions } from "@/Context/CanvasContext";
 
 const cloud_name = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const cloud_preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
@@ -16,8 +15,6 @@ export default function FileUpload() {
   const [uploading,setUploading] = useState(false);
   const [error,setError] = useState(null);
   const router = useRouter();
-
-  const contextValues = useOptions();
   
   const onDrop = (acceptedFiles) => {
     setFile(acceptedFiles[0]);

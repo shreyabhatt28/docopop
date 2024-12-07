@@ -9,8 +9,7 @@ const nextConfig = {
           ];
         }
         return config;
-      },
-    
+      },    
     
 };
 
