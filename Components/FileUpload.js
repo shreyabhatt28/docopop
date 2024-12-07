@@ -18,7 +18,6 @@ export default function FileUpload() {
   
   const onDrop = (acceptedFiles) => {
     setFile(acceptedFiles[0]);
-    console.log(acceptedFiles[0]);
     setError(null);
     setUploading(false);
   }

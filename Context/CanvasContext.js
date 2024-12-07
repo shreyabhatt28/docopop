@@ -51,8 +51,6 @@ const CanvasProvider = ({children}) =>{
 
             const pages = pdfDoc.getPages();
 
-            console.log(pages.length);
-
             if (pages.length === 1){
                 const singlePage = pages[0];
 
@@ -61,8 +59,6 @@ const CanvasProvider = ({children}) =>{
                 const canvasOverlay = await pdfDoc.embedPng(canvasOverlayBytes);
 
                 const { width, height } = canvasOverlay;
-    
-                    console.log('Image Dimensions:', width, height);
         
                     singlePage.drawImage(canvasOverlay, {
                         x: 0,
@@ -115,7 +111,7 @@ const CanvasProvider = ({children}) =>{
 
             const link = document.createElement('a');
             link.href = exportUrl;
-            link.download = 'modified_document.pdf';
+            link.download = 'modified_page.pdf';
             link.click();
     
             URL.revokeObjectURL(exportUrl);
