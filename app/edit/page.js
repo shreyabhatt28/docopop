@@ -1,16 +1,17 @@
 "use client"
-
+import { Suspense } from 'react';
 import EditDocument from '@/Components/EditDocument';
-import { useSearchParams } from 'next/navigation';
+
+import Loading from '@/Components/Loading';
 
 const MyPdfViewer = () => {
-    const searchParams = useSearchParams();
-    const pdfUrl = searchParams.get("fileUrl");
 
     return(
-        <div className='w-full h-full flex justify-center'>
-            <EditDocument fileUrl = {pdfUrl}/>
-        </div>
+    <Suspense fallback={<div className="z-[20] bg-black bg-opacity-40 backdrop-blur-sm fixed inset-0 text-white flex items-center justify-center"><Loading/></div>}>
+    <div className='w-full h-full flex justify-center'>
+            <EditDocument />
+    </div>
+    </Suspense>
     )
 };
 

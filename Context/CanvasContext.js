@@ -21,26 +21,24 @@ const CanvasProvider = ({children}) =>{
 
 
     useEffect(() => {
-        setIsClient(true); // This will be set to true only on the client-side
+        setIsClient(true); 
     }, []);
 
-    // Initialize fabric canvases only on the client-side
+
     useEffect(() => {
         if (isClient) {
-            const mainCanvasElement = document.createElement('canvas');
-            mainCanvasElement.width = 595;
-            mainCanvasElement.height = 842;
-            mainCanvasElement.style.backgroundColor = 'rgba(0, 0, 0, 0)';
-    
-            const newCanvas = new fabric.Canvas(mainCanvasElement);
-            setCanvas(newCanvas); 
             
             const tempCanvasElement = document.createElement('canvas');
             tempCanvasElement.width = 595;
             tempCanvasElement.height = 842;
             tempCanvasElement.style.backgroundColor = 'rgba(0, 0, 0, 0)';
     
-            const newTempCanvas = new fabric.Canvas(tempCanvasElement);
+            const newTempCanvas = new fabric.Canvas('canvas',{
+                height: 842,
+                width: 595,
+                backgroundColor: 'rgba(0,0,0,0)'
+            }
+            );
             setTempCanvas(newTempCanvas); 
         }
     }, [isClient]);
@@ -78,9 +76,19 @@ const CanvasProvider = ({children}) =>{
                 for (let i = 0; i < pages.length; i++){
 
                     const page = pages[i];
-                    
+
+                    if(!edits[i+1]){
+                        continue;
+                    }
+
+                    tempCanvas.clear();
                     tempCanvas.loadFromJSON(edits[i+1]);
-                    tempCanvas.renderAll();
+
+                    await new Promise((resolve) => {
+                        tempCanvas.renderAll();
+                        setTimeout(resolve, 0);
+                    });
+
 
                     const canvasOverlayUrl = tempCanvas.toDataURL('image/png');
                     const canvasOverlayBytes = await fetch(canvasOverlayUrl).then(res => res.arrayBuffer());
@@ -97,8 +105,9 @@ const CanvasProvider = ({children}) =>{
                         height,
                     });
                 }
+                
             }
-            
+
             const modifiedPdfBytes = await pdfDoc.save();
 
             const blob = new Blob([modifiedPdfBytes], { type: 'application/pdf' });
@@ -106,7 +115,7 @@ const CanvasProvider = ({children}) =>{
 
             const link = document.createElement('a');
             link.href = exportUrl;
-            link.download = 'modified_page.pdf';
+            link.download = 'modified_document.pdf';
             link.click();
     
             URL.revokeObjectURL(exportUrl);

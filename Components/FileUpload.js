@@ -60,7 +60,7 @@ export default function FileUpload() {
 
       setFileUrl(data.secure_url);
 
-      router.push(`/edit/?fileUrl=${data.secure_url}`);
+      router.push(`/edit/?fileUrl=${encodeURIComponent(data.secure_url)}`);
 
       setUploading(false);
     }catch(err){

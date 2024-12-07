@@ -1,3 +1,5 @@
+"use client"
+
 import { Document, Page, pdfjs } from "react-pdf";
 import {useEffect, useState} from "react";
 import { Button } from "./ui/button";
@@ -8,17 +10,20 @@ import {fabric} from "fabric";
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import { useOptions } from "@/Context/CanvasContext";
+import { useSearchParams } from "next/navigation";
 
-const EditDocument = ({fileUrl}) => {
+
+
+const EditDocument = () => {
+  const searchParams = useSearchParams();
+  const fileUrl = searchParams.get("fileUrl");
+
   const contextValues = useOptions();
 
   const[isDocLoading,setIsDocLoading] = useState(true);
 
-  
-
   useEffect(() => {
-    pdfjs.GlobalWorkerOptions.workerSrc =
-      "https://unpkg.com/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";
+    pdfjs.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
   }, []);
 
 
@@ -27,8 +32,9 @@ const EditDocument = ({fileUrl}) => {
     contextValues.setNumPages(numPages);
     contextValues.setCurrentPage(1);
     contextValues.setCanvas(createCanvas());
-    setTimeout(()=> {setIsDocLoading(false);},2000);
+    setTimeout(()=> {setIsDocLoading(false)},2000);
   }
+
 
   const createCanvas = () => {
     return (new fabric.Canvas('canvas',{
@@ -40,9 +46,10 @@ const EditDocument = ({fileUrl}) => {
   }
 
   function changePage(direction) {
+    
     const currentPage = contextValues.currentPage;
     contextValues.edits[currentPage] = contextValues.canvas.toObject();
-    contextValues.setEdits(contextValues.edits);
+    contextValues.setEdits({...contextValues.edits});
 
     const newPage = currentPage + direction;
 
@@ -52,12 +59,9 @@ const EditDocument = ({fileUrl}) => {
 
     contextValues.canvas.clear();
     
-    (contextValues.edits[newPage]) && contextValues.canvas.loadFromJSON(contextValues.edits[newPage])
-    {
-      contextValues.canvas.renderAll();
-    }
-
-    console.log(contextValues.edits); 
+    contextValues.canvas.loadFromJSON(contextValues.edits[newPage])
+    contextValues.canvas.renderAll();
+console.log(contextValues.edits)
 }
 
 
@@ -66,6 +70,7 @@ const EditDocument = ({fileUrl}) => {
     <div className="flex w-full h-full items-center justify-center flex-col gap-2 pt-10">
       {isDocLoading && <div className="z-[20] bg-black bg-opacity-40 backdrop-blur-sm fixed inset-0 text-white flex items-center justify-center"><Loading/></div>}
       {!isDocLoading && <SideBar fileUrl={fileUrl}/>}
+      {(contextValues.numPages > 1) && <p className="text-sm text-purple-800 mb-2">Please navigate between pages to save changes</p>}
       <div id = "singlePage" className="flex justify-center items-center">
       <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess} loading="">
       <div className="z-[8] absolute">
@@ -85,6 +90,7 @@ const EditDocument = ({fileUrl}) => {
           <MoveRight />
         </Button>
       </div>
+      
     </div>
   );
 };
