@@ -3,18 +3,29 @@
 import { createContext, useContext, useState,useEffect } from "react";
 import {fabric} from "fabric";
 import { PDFDocument } from "pdf-lib";
+import {Montserrat} from "next/font/google";
 
 const editOptions = createContext();
 
 export const useOptions = () =>{
     return useContext(editOptions);
 }
+
+const montserrat = Montserrat({
+    subsets: ['latin'],
+    weights: ['300', '400', '500', '600', '700'],
+    style: 'normal', 
+  });
+
     
 
 const CanvasProvider = ({children}) =>{
     const [numPages,setNumPages] = useState(null);
     const [currentPage,setCurrentPage] = useState(0);
     const [canvas,setCanvas] = useState('');
+    const [color,setColor] =useState("#000000");
+    const [docWidth,setDocWidth] = useState(null);
+    const [docHeight,setDocHeight] = useState(null);
     const [edits,setEdits] = useState({});
     const [tempCanvas,setTempCanvas] = useState('');
     const [isClient, setIsClient] = useState(false);
@@ -25,31 +36,22 @@ const CanvasProvider = ({children}) =>{
     }, []);
 
 
-    useEffect(() => {
-        if (isClient) {
-            
-            const tempCanvasElement = document.createElement('canvas');
-            tempCanvasElement.width = 595;
-            tempCanvasElement.height = 842;
-            tempCanvasElement.style.backgroundColor = 'rgba(0, 0, 0, 0)';
-    
-            const newTempCanvas = new fabric.Canvas('canvas',{
-                height: 842,
-                width: 595,
-                backgroundColor: 'rgba(0,0,0,0)'
-            }
-            );
-            setTempCanvas(newTempCanvas); 
-        }
-    }, [isClient]);
-
-
     const exportDocument = async (fileUrl) => {
         try {
             const existingPdfBytes = await fetch(fileUrl).then(res => res.arrayBuffer());
             const pdfDoc = await PDFDocument.load(existingPdfBytes);
-
             const pages = pdfDoc.getPages();
+
+            const tempCanvasElement = document.createElement('canvas');
+            tempCanvasElement.width = docWidth; 
+            tempCanvasElement.height = docHeight;
+            tempCanvasElement.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+            
+            const tempCanvas = new fabric.Canvas(tempCanvasElement, {
+            height: docHeight,
+            width: docWidth,
+            backgroundColor: 'rgba(0,0,0,0)'
+            });
 
             if (pages.length === 1){
                 const singlePage = pages[0];
@@ -62,7 +64,7 @@ const CanvasProvider = ({children}) =>{
         
                     singlePage.drawImage(canvasOverlay, {
                         x: 0,
-                        y: singlePage.getHeight() - height,
+                        y: singlePage.getHeight()-height,
                         width,
                         height,
                     });
@@ -91,8 +93,6 @@ const CanvasProvider = ({children}) =>{
                     const canvasOverlay = await pdfDoc.embedPng(canvasOverlayBytes);
     
                     const { width, height } = canvasOverlay;
-    
-                    console.log('Image Dimensions:', width, height);
         
                     page.drawImage(canvasOverlay, {
                         x: 0,
@@ -121,6 +121,12 @@ const CanvasProvider = ({children}) =>{
         }
     }
 
+    const saveChanges = () => {
+        setEdits((prevEdits) => ({
+          ...prevEdits,
+          [currentPage]: canvas.toObject(),
+        }));
+      };
 
     const deleteBtn = () => {
         let activeObject = canvas.getActiveObject();
@@ -133,36 +139,9 @@ const CanvasProvider = ({children}) =>{
         const text = new fabric.Textbox("Type...",{
             editable: true,
         });
-        text.set({fill : "black", fontFamily: "Arial"});
+        text.set({fill : color, fontFamily: montserrat.style.fontFamily});
         canvi.add(text);
         canvi.renderAll();
-    }
-
-    const addBlurEffect = (canvi) => {
-
-        const imgElement = new Image();
-        imgElement.src = '/pixel.jpg';
-
-        imgElement.onload = () => {
-            const pattern = new fabric.Pattern({
-                source: imgElement,
-                repeat:'repeat',
-            })
-
-        const blur = new fabric.Rect({
-            left: 100,
-            top: 100,
-            width: 200,
-            height: 16,
-            fill: pattern,
-            selectable: true,
-            hasControls: true,
-            evented: true,
-        });
-
-        canvi.add(blur);
-        canvi.renderAll();
-        }
     }
 
     const addHighlight = (canvi) => {
@@ -171,37 +150,27 @@ const CanvasProvider = ({children}) =>{
             top:150,
             width:200,
             height:16,
-            fill: 'rgba(247, 215, 52,0.2)',
+            fill: color,
+            opacity:0.3,
         });
         canvi.add(highlighter);
         canvi.renderAll();
     }
 
-    const addEraser = (canvi) => {
-        const eraser = new fabric.Rect({
-            left:150,
-            top:150,
-            width:200,
-            height:30,
-            fill: 'white',
-        });
-        canvi.add(eraser);
-        canvi.renderAll();
-    }
     
-    const addBlackout = (canvi) => {
-        const blackOut = new fabric.Rect({
+    const addRectangle = (canvi) => {
+        const rectangle = new fabric.Rect({
             left:200,
             top:150,
             width:200,
             height:30,
-            fill: 'black',
+            fill: color,
         });
-        canvi.add(blackOut);
+        canvi.add(rectangle);
         canvi.renderAll();
     }
     return(
-        <editOptions.Provider value={{canvas,setCanvas,numPages,setNumPages,currentPage,setCurrentPage,deleteBtn,addText,addBlurEffect,edits,setEdits,addHighlight,addEraser,addBlackout,exportDocument}}>
+        <editOptions.Provider value={{canvas,setCanvas,numPages,setNumPages,currentPage,color,setColor,docWidth,setDocWidth,docHeight,setDocHeight,setCurrentPage,deleteBtn,addText,edits,setEdits,addHighlight,addRectangle,exportDocument,saveChanges}}>
             {children}
         </editOptions.Provider>
     )

@@ -27,19 +27,34 @@ const EditDocument = () => {
   }, []);
 
 
-  const onDocumentLoadSuccess = ({numPages}) => {
+  const onDocumentLoadSuccess = async ({ numPages }) => {
     contextValues.setEdits({});
     contextValues.setNumPages(numPages);
     contextValues.setCurrentPage(1);
-    contextValues.setCanvas(createCanvas());
-    setTimeout(()=> {setIsDocLoading(false)},2000);
-  }
+
+    const pdf = await pdfjs.getDocument(fileUrl).promise;
+    const page = await pdf.getPage(1);
+
+    const viewport = page.getViewport({ scale: 1 });
+    const pageWidth = viewport.width;
+    const pageHeight = viewport.height;
 
 
-  const createCanvas = () => {
+    contextValues.setDocWidth(pageWidth);
+    contextValues.setDocHeight(pageHeight);
+
+    contextValues.setCanvas(createCanvas(pageHeight, pageWidth));
+
+    setTimeout(() => {
+      setIsDocLoading(false);
+    }, 2000);
+  };
+
+
+  const createCanvas = (docHeight,docWidth) => {
     return (new fabric.Canvas('canvas',{
-      height: 842,
-      width: 595,
+      height: docHeight,
+      width: docWidth,
       backgroundColor: 'rgba(0,0,0,0)'
     }
     ))
@@ -48,8 +63,10 @@ const EditDocument = () => {
   function changePage(direction) {
     
     const currentPage = contextValues.currentPage;
-    contextValues.edits[currentPage] = contextValues.canvas.toObject();
-    contextValues.setEdits({...contextValues.edits});
+    contextValues.setEdits((prevEdits) => ({
+      ...prevEdits,
+      [currentPage]: contextValues.canvas.toObject(),
+    }));
 
     const newPage = currentPage + direction;
 
@@ -61,7 +78,6 @@ const EditDocument = () => {
     
     contextValues.canvas.loadFromJSON(contextValues.edits[newPage])
     contextValues.canvas.renderAll();
-console.log(contextValues.edits)
 }
 
 
@@ -70,14 +86,13 @@ console.log(contextValues.edits)
     <div className="flex w-full h-full items-center justify-center flex-col gap-2 pt-10">
       {isDocLoading && <div className="z-[20] bg-black bg-opacity-40 backdrop-blur-sm fixed inset-0 text-white flex items-center justify-center"><Loading/></div>}
       {!isDocLoading && <SideBar fileUrl={fileUrl}/>}
-      {(contextValues.numPages > 1) && <p className="text-sm text-purple-800 mb-2">Please navigate between pages to save the changes</p>}
       <div id = "singlePage" className="flex justify-center items-center">
       <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess} loading="">
       <div className="z-[8] absolute">
           <canvas id="canvas"/>
       </div>
       <div id="pdf-doc" className="shadow-lg z-[7]">
-      <Page pageNumber={contextValues.currentPage} width={595} height={842} loading=""/>
+      <Page pageNumber={contextValues.currentPage} width={contextValues.docWidth} height={contextValues.docHeight} loading=""/>
       </div>
       </Document>
       </div>
@@ -90,7 +105,6 @@ console.log(contextValues.edits)
           <MoveRight />
         </Button>
       </div>
-      
     </div>
   );
 };
