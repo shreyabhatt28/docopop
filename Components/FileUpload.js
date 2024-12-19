@@ -4,22 +4,17 @@ import {useDropzone} from "react-dropzone";
 import { Button } from "./ui/button";
 import { Edit, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
-
-const cloud_name = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-const cloud_preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+import { useOptions } from "@/Context/CanvasContext";
 
 
 export default function FileUpload() {
-  const [file, setFile] = useState(null);
-  const [fileUrl,setFileUrl] = useState(null);
+  const contextValues = useOptions();
+
   const [uploading,setUploading] = useState(false);
-  const [error,setError] = useState(null);
   const router = useRouter();
   
   const onDrop = (acceptedFiles) => {
-    setFile(acceptedFiles[0]);
-    setError(null);
-    setUploading(false);
+    contextValues.setFile(acceptedFiles[0]);
   }
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -28,40 +23,24 @@ export default function FileUpload() {
     multiple: false, 
 });
 
-  const handleUpload = async () => {
-    if(!file){
+  const handleUpload = () => {
+    if(!contextValues.file){
       return;
     }
-
     setUploading(true);
-    setError(null);
+    const fileUrl = URL.createObjectURL(contextValues.file);
+    contextValues.setFileUrl(fileUrl);
 
-    const formData = new FormData();
-    formData.append('file',file);
-    formData.append('upload_preset',cloud_preset);
-    formData.append('resource_type', 'auto');
+    setTimeout(()=>{
+      setUploading(false);
+    }
+    ,2100);
 
-
-    try{
-      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloud_name}/upload`,{
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await response.json();
-
-      if(data.error){
-        throw new Error(data.error.message);
-      }
-
-      setFileUrl(data.secure_url);
-
-      router.push(`/edit/?fileUrl=${encodeURIComponent(data.secure_url)}`);
-
-      setTimeout(()=>setUploading(false),2000);
-    }catch(err){
-      setError(err.message);
-  }
+    setTimeout(()=>{
+      router.push('/edit');
+    }
+    ,2000);
+    
 }
 
 
@@ -77,17 +56,16 @@ export default function FileUpload() {
       <h1 className="font-bold">Drag and Drop the file here</h1>
       <p>or <span className="text-purple-800">browse file </span>from your device</p>
       <p className="text-gray-500 mt-2 text-sm">
-        {file ? `selected file: ${file.name}` : "no file selected"}
+        {contextValues.file ? `selected file: ${contextValues.file.name}` : "no file selected"}
       </p>
-      <p className={error ? 'block text-red-500 text-xs mt-2' : 'hidden'}>Failed! Try uploading again</p>
     </div>
 
-      {file && !error && (
+      {contextValues.file && (
         <Button
           onClick = {handleUpload}
           className="mt-4 bg-purple-800 hover:bg-puple-400 text-white transition ease rounded-full"
         >
-          { uploading && !error ? <div className="w-2 h-2 border-2 border-t-transparent border-b-transparent border-l-transparent border-r-white-400 rounded-full animate-spin"></div> : <>Edit <Edit /></>}
+          { uploading ? <div className="w-2 h-2 border-2 border-t-transparent border-b-transparent border-l-transparent border-r-white-400 rounded-full animate-spin"></div> : <>Edit <Edit /></>}
         </Button>
       )}
       </div>

@@ -1,4 +1,4 @@
-import {RectangleHorizontal,Download, Type,EyeClosed, Eraser, Highlighter,Pen,Save,Trash } from "lucide-react";
+import {RectangleHorizontal,Download, Type, Highlighter,Save,Trash, Circle } from "lucide-react";
 import { useOptions } from "@/Context/CanvasContext";
 import TooltipButton from "./TooltipButton";
 
@@ -30,6 +30,12 @@ return (
                     icon={<RectangleHorizontal/>}
                     onClick={() => contextValues.addRectangle(contextValues.canvas)}
                     tooltipText="Draw Rectangle"
+                />
+
+                <TooltipButton
+                    icon={<Circle/>}
+                    onClick={() => contextValues.addCircle(contextValues.canvas)}
+                    tooltipText="Draw Circle"
                 />
 
 <TooltipButton
